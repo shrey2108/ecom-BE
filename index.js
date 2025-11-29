@@ -11,6 +11,13 @@ connectDB();
 // middlewares
 app.use(express.json());
 
+app.get("/healthcheck", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is live"
+  })
+})
+
 // Router
 const router = require("./routes/router");
 app.use("/api", router);
