@@ -20,7 +20,16 @@ module.exports.register = async (req, res) => {
       role: user.role
     }, process.env.JWT_SECRET);
 
-    api.success(res, {token}, "User registered successfully", 201);
+    const data = {
+      token: token,
+      user: {
+        id: user._id,
+        role: user.role,
+        email: user.email
+      }
+    }
+
+    api.success(res, data, "User registered successfully", 201);
   } catch (error) {
     api.error(res, error.message, "Something went wrong in registering user");
   }
@@ -43,7 +52,16 @@ module.exports.login = async (req, res) => {
       role: user.role
     }, process.env.JWT_SECRET);
 
-    api.success(res, {token}, "User loggedin successfully")
+    const data = {
+      token: token,
+      user: {
+        id: user._id,
+        role: user.role,
+        email: user.email
+      }
+    }
+
+    api.success(res, data, "User loggedin successfully")
   } catch (error) {
     api.error(res, error.message, "Something went wrong in validating user");
   }
