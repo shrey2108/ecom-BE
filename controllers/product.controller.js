@@ -1,5 +1,6 @@
 const Product = require("../models/product.model");
 const api = require("../utils/api");
+const { Types } = require("mongoose");
 
 module.exports.getAllProducts = async (req, res) => {
   try {
@@ -12,7 +13,49 @@ module.exports.getAllProducts = async (req, res) => {
 
 module.exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate({path: "sellerId", select: "name email role"});
+    const query = [
+      {
+        $match: {
+          _id: new Types.ObjectId(`${req.params.id}`)
+        }
+      },
+      {
+        $lookup: {
+          from: "reviews",
+          localField: "_id",
+          foreignField: "productId",
+          as: "reviews",
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+              }
+            },
+            {
+              $unwind: {
+                path: "$user",
+                preserveNullAndEmptyArrays: false
+              }
+            },
+            {
+              $project: {
+                comment: 1,
+                rating: 1,
+                user: {
+                  name: 1,
+                  email: 1
+                }
+              }
+            }
+          ]
+        }
+      }
+    ];
+
+    const [product] = await Product.aggregate(query);
     api.success(res, product);
   } catch (error) {
     api.error(res, error.message, "Error in fetching the product");
